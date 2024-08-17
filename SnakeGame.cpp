@@ -3,19 +3,30 @@
 #include <windows.h>
 using namespace std;
 
+int lives = 3;
+
 bool gameOver;
 const int width = 20;
 const int height = 20;
 int x, y, fruitX, fruitY, score;
 int tailX[100], tailY[100];
 int nTail;                                              // in order to run for loop to print tail
-enum eDirection { STOP = 0, LEFT, RIGHT, UP, DOWN };
-eDirection dir;
+enum eDirection { STOP = 0, LEFT, RIGHT, UP, DOWN };    //Each name corresponds to unique const integer value
+eDirection dir;                                         //can hold any of the values defined in eNum
 
 void getScore()
 {
     cout << "Your Score: " << score << endl;
+    cout << "Your Lives: " << lives << endl;
+    cout << "Press 'x' to end game" << endl;
 }
+
+void Freeze()
+{
+    Sleep(500);
+    dir = STOP;
+}
+
 void Setup()
 {
     gameOver = false;
@@ -46,7 +57,7 @@ for (int i = 0; i < height; i++)
         if (i == y && j == x)
             cout << "O";
         else if (i == fruitY && j == fruitX)
-            cout << "*";
+            cout << "+";
         else
         {
             bool print = false;
@@ -81,31 +92,55 @@ for (int i = 0; i < height; i++)
     cout << endl;
 }
 
-
+//Movement input for arrow keys and wasd keys
 void  Input()
 {
-    if (_kbhit()) //returns positive number if keyboasrd press
+    if (_kbhit()) //returns positive number if keyboard press
     {
-        switch (_getch())
+        int key = _getch();
+
+        if (key == 224)
         {
-        case 'a':
-            dir = LEFT;
-            break;
-        case 'd':
-            dir = RIGHT;
-            break;
-        case 'w':
-            dir = UP;
-            break;
-        case 's':
-            dir = DOWN;
-            break;
-        case 'x':
-            gameOver = true;
-            break;
-       /*case 'p':
-            getScore();
-            break; */ 
+            key = _getch();
+
+
+            switch (key)
+            {
+            case 72:
+                dir = UP;
+                break;
+            case 80:
+                dir = DOWN;
+                break;
+            case 75:
+                dir = LEFT;
+                break;
+            case 77:
+                dir = RIGHT;
+                break;
+            }
+        }
+
+        else
+        {
+            switch (key)
+            {
+            case 'w':
+                dir = UP;
+                break;
+            case 's':
+                dir = DOWN;
+                break;
+            case 'a':
+                dir = LEFT;
+                break;
+            case 'd':
+                dir = RIGHT;
+                break;
+            case 'x':
+                gameOver = true;
+                break;
+            }
         }
     }
 }
@@ -145,12 +180,30 @@ void Logic()
         break;
 
     }
-    if (x > width || x < 0 || y > height || y < 0) //endgame if past map
-        gameOver = true;
-
+    //Wrap around if snake passes border
+    if (x >= width) x = 0; else if (x < 0) x = width - 1;
+    if (y > +height)y = 0; else if (y < 0)y = height - 1;    
+   
+    //Check if snake turns on itself 
+    //This can be used to remove a life if snake turns on itself
     for (int i = 0; i < nTail; i++)
         if (tailX[i] == x && tailY[i] == y)
-            gameOver = true;
+        {
+            /*lives--;
+            if (lives == 0)
+            {
+                gameOver = true;
+            }
+            else
+            {
+                nTail = 0;
+                x = width / 2;
+                y = height / 2;
+                dir = STOP;
+            }
+            break;*/
+        }
+
     
     if (x == fruitX && y == fruitY)
     {
